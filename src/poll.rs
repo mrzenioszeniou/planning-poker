@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::error::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Poll {
   id: String,
   title: String,
