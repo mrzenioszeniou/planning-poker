@@ -3,16 +3,16 @@ use crate::{error::Error, poll::Poll};
 use rand::{distributions::Alphanumeric, Rng};
 use std::collections::BTreeMap;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 pub struct AppState {
-  polls: Arc<Mutex<BTreeMap<String, Poll>>>,
+  polls: Mutex<BTreeMap<String, Poll>>,
 }
 
 impl AppState {
   pub fn load() -> Self {
     Self {
-      polls: Arc::from(Mutex::from(BTreeMap::new())),
+      polls: Mutex::from(BTreeMap::new()),
     }
   }
 
@@ -49,7 +49,7 @@ impl AppState {
     poll_id
   }
 
-  pub fn vote(&self, poll_id: &str, email: String, weight: f32) -> Result<(), Error> {
+  pub fn vote(&self, poll_id: &str, email: String, weight: f64) -> Result<(), Error> {
     match self.polls.lock() {
       Ok(mut polls) => {
         polls
@@ -63,11 +63,9 @@ impl AppState {
     Ok(())
   }
 
-  pub fn get_poll_info(&self, poll_id: &str) -> Option<Vec<u8>> {
+  pub fn get_poll_info(&self, poll_id: &str) -> Option<Poll> {
     match self.polls.lock() {
-      Ok(polls) => polls
-        .get(poll_id)
-        .map(|p| serde_json::to_vec_pretty(p).unwrap()),
+      Ok(polls) => polls.get(poll_id).cloned(),
       _ => panic!("Mutex poisoned"),
     }
   }

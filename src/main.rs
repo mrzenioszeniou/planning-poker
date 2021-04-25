@@ -1,43 +1,62 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
-#[macro_use]
-extern crate rocket;
 extern crate rand;
 #[macro_use]
+extern crate rocket;
+#[macro_use]
 extern crate serde;
+
+use rocket::{http::Status, Response, State};
+use serde_json::Value;
+use state::AppState;
+use std::io::Cursor;
 
 mod error;
 mod poll;
 mod state;
 
-use error::Error;
-use rocket::{http::Status, Response, State};
-use serde_json::Value;
-use state::AppState;
+use crate::error::Error;
 
-use std::io::Cursor;
-
+/// Gets info on a specific poll
 #[get("/poll/<id>")]
-fn get_poll(id: String, state: State<AppState>) -> Response {
+fn get_poll(id: String, state: State<AppState>) -> Result<Response, Error> {
   let mut response = Response::new();
 
   match state.get_poll_info(&id) {
     Some(poll) => {
-      response.set_sized_body(Cursor::new(poll));
+      response.set_sized_body(Cursor::new(
+        serde_json::to_vec(&poll).map_err(|_| Error::from("Shiet"))?,
+      ));
       response.set_status(Status::Ok);
     }
     None => response.set_status(Status::NotFound),
   };
 
-  response
+  Ok(response)
 }
 
+/// Creates new poll
 #[post("/poll", data = "<data>")]
-fn create_poll(data: String, state: State<AppState>) -> Response {
-  let value: Value = serde_json::from_str(&data).unwrap();
+fn create_poll(data: String, state: State<AppState>) -> Result<Response, Error> {
+  let body: Value = serde_json::from_str(&data).unwrap();
 
-  let title = value.get("title").unwrap().as_str().unwrap();
-  let desc = value.get("desc").unwrap().as_str().unwrap();
+  let title = body
+    .get("title")
+    .map(|v| v.as_str())
+    .flatten()
+    .ok_or(Error::new(
+      "'title' field could not be found in body",
+      Status::BadRequest,
+    ))?;
+
+  let desc = body
+    .get("desc")
+    .map(|v| v.as_str())
+    .flatten()
+    .ok_or(Error::new(
+      "'desc' field could not be found in body",
+      Status::BadRequest,
+    ))?;
 
   let id = state
     .inner()
@@ -47,21 +66,43 @@ fn create_poll(data: String, state: State<AppState>) -> Response {
   response.set_sized_body(Cursor::new(id));
   response.set_status(Status::Ok);
 
-  response
+  Ok(response)
 }
 
-// Vote on poll
+/// Votes on a specific poll
+#[post("/poll/<id>", data = "<data>")]
+fn vote(id: String, data: String, state: State<AppState>) -> Result<Response, Error> {
+  let body: Value = serde_json::from_str(&data).unwrap();
+
+  let email = body
+    .get("email")
+    .map(|v| v.as_str())
+    .flatten()
+    .ok_or(Error::new(
+      "'email' field could not be found in body",
+      Status::BadRequest,
+    ))?;
+
+  let weight = body
+    .get("weight")
+    .map(|v| v.as_f64())
+    .flatten()
+    .ok_or(Error::new(
+      "'weight' field could not be found in body",
+      Status::BadRequest,
+    ))?;
+
+  match state.vote(&id, email.to_lowercase(), weight) {
+    Ok(()) => Response::build().status(Status::Ok).ok(),
+    Err(e) => Err(e.status(Status::NotFound)),
+  }
+}
 
 fn main() -> Result<(), Error> {
   let state = AppState::load();
 
-  let id = state.add_poll(String::from("Add some stuff to the thing"), String::from("The thing has a few stuff, but some more should be added. We wouldn't want to be the team with the less amount of stuff in their thing, would we?"));
-
-  state.vote(&id, String::from("foo@bar.com"), 2.0)?;
-  state.vote(&id, String::from("bar@foo.com"), 8.0)?;
-
   rocket::ignite()
-    .mount("/", routes![get_poll, create_poll])
+    .mount("/", routes![get_poll, create_poll, vote])
     .manage(state)
     .launch();
 

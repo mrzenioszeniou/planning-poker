@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 use crate::error::Error;
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Poll {
   id: String,
   title: String,
   desc: String,
-  votes: HashMap<String, f32>,
+  votes: HashMap<String, f64>,
 }
 
 impl Poll {
@@ -20,14 +20,14 @@ impl Poll {
     }
   }
 
-  pub fn vote(&mut self, email: String, weight: f32) -> Result<(), Error> {
+  pub fn vote(&mut self, email: String, weight: f64) -> Result<(), Error> {
     check_weight(weight)?;
     self.votes.insert(email, weight);
     Ok(())
   }
 }
 
-fn check_weight(weight: f32) -> Result<(), Error> {
+fn check_weight(weight: f64) -> Result<(), Error> {
   if weight == 0.0
     || weight == 0.5
     || weight == 1.0
