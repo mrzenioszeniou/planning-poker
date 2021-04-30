@@ -4,50 +4,47 @@
   --green: #5a8100;
   --yellow: #ffb400;
   --orange: #ff6c02;
-}
-
-html {
-  height: 100%;
-}
-
-body {
+  background-color: var(--white);
+  color: var(--grey);
   font-family: 'Montserrat', sans-serif;
-  margin: 0;
-  height: 100%;
 }
 
 footer {
-  display: flex;
-  padding-top: 30px;
-  padding-bottom: 10px;
-  justify-content: center;
-  font-size: 12px;
-  background-color: var(--white);
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 5px;
+  font-size: smaller;
 }
 
-.space-eater {
-  flex-grow: 1;
-}
-
-.main {
-  min-height: 100%;
-  background-color: var(--white);
-  color: var(--grey);
+.base {
   display: flex;
   flex-direction: column;
+  font-size: larger;
+  padding-left: 10em;
+  padding-right: 10em;
   justify-content: center;
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
+.centered {
   align-self: center;
-  margin: 20px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-title {
+  font-size: medium;
+  margin-top: 1em;
 }
 
 .button {
   padding: 10px;
-  margin:5px;
+  margin:10px;
   text-align: center;
   border-radius: 3px;
   border: solid 1px;
