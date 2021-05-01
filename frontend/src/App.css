@@ -29,6 +29,7 @@ footer {
 }
 
 .centered {
+  align-items: center;
   align-self: center;
 }
 
@@ -42,6 +43,21 @@ footer {
   margin-top: 1em;
 }
 
+.input-poll {
+  width: 10em;
+}
+
+.subtle-link {
+  font-size: small;
+  color: var(--yellow);
+}
+
+.warning {
+  margin: 5px;
+  font-size: medium;
+  color: var(--orange);
+}
+
 .button {
   padding: 10px;
   margin:10px;
@@ -51,7 +67,6 @@ footer {
   user-select: none;
   text-decoration: none;
   width: fit-content;
-  align-self: center;
 }
 
 .button.green {
