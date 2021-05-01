@@ -23,8 +23,8 @@ footer {
   display: flex;
   flex-direction: column;
   font-size: larger;
-  padding-left: 10em;
-  padding-right: 10em;
+  padding-left: 15em;
+  padding-right: 15em;
   justify-content: center;
 }
 
@@ -56,6 +56,23 @@ footer {
   margin: 5px;
   font-size: medium;
   color: var(--orange);
+}
+
+.poll-details {
+  margin-top: 5em;
+  margin-bottom: 5em;
+}
+
+.poll-title {
+  font-size: x-large;
+  font-weight: 600;
+  margin: 10px;
+}
+
+.poll-desc {
+  font-size: larger;
+  font-weight: 400;
+  margin: 10px;
 }
 
 .button {
