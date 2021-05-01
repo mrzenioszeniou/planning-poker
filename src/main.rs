@@ -19,27 +19,27 @@ mod state;
 
 use crate::error::Error;
 
-#[get("/res/<path..>")]
-fn get_resource(path: PathBuf) -> Result<NamedFile, Error> {
-  let mut final_path = PathBuf::from_str("res").map_err(|e| Error::from(e.to_string()))?;
-  final_path.push(path);
-  NamedFile::open(final_path).map_err(|e| Error::new(&format!("{}", e), Status::NotFound))
-}
+// #[get("/res/<path..>")]
+// fn get_resource(path: PathBuf) -> Result<NamedFile, Error> {
+//   let mut final_path = PathBuf::from_str("res").map_err(|e| Error::from(e.to_string()))?;
+//   final_path.push(path);
+//   NamedFile::open(final_path).map_err(|e| Error::new(&format!("{}", e), Status::NotFound))
+// }
 
-#[get("/")]
-fn index() -> Result<NamedFile, Error> {
-  let path = PathBuf::from_str("res/html/index.html").map_err(|e| Error::from(e.to_string()))?;
-  NamedFile::open(path).map_err(|e| Error::new(&format!("{}", e), Status::NotFound))
-}
+// #[get("/")]
+// fn index() -> Result<NamedFile, Error> {
+//   let path = PathBuf::from_str("res/html/index.html").map_err(|e| Error::from(e.to_string()))?;
+//   NamedFile::open(path).map_err(|e| Error::new(&format!("{}", e), Status::NotFound))
+// }
 
-#[get("/poll")]
-fn poll_page() -> Result<NamedFile, Error> {
-  let path = PathBuf::from_str("res/html/create.html").map_err(|e| Error::from(e.to_string()))?;
-  NamedFile::open(path).map_err(|e| Error::new(&format!("{}", e), Status::NotFound))
-}
+// #[get("/poll")]
+// fn poll_page() -> Result<NamedFile, Error> {
+//   let path = PathBuf::from_str("res/html/create.html").map_err(|e| Error::from(e.to_string()))?;
+//   NamedFile::open(path).map_err(|e| Error::new(&format!("{}", e), Status::NotFound))
+// }
 
 /// Gets info on a specific poll
-#[get("/poll/<id>")]
+#[get("/poll/<id>", format = "application/json")]
 fn get_poll(id: String, state: State<AppState>) -> Result<Response, Error> {
   let mut response = Response::new();
 
@@ -124,10 +124,7 @@ fn main() -> Result<(), Error> {
   let state = AppState::load();
 
   rocket::ignite()
-    .mount(
-      "/",
-      routes![get_poll, create_poll, vote, poll_page, get_resource, index],
-    )
+    .mount("/", routes![get_poll, create_poll, vote])
     .manage(state)
     .launch();
 
