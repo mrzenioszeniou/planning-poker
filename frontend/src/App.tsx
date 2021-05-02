@@ -71,10 +71,12 @@ class App extends React.Component<Props, State>  {
         );
 
       case Stage.Created:
+        const hrefSplit = window.location.href.split("/");
+        const pollAddress = hrefSplit[0] + "//" + hrefSplit[2] + "/" + this.state.poll;
         return (
           <div className="base centered">
             <div>Poll Created!</div>
-            <a href={window.location + this.state.poll}>{window.location + this.state.poll}</a>
+            <a href={pollAddress}>{pollAddress}</a>
           </div>
         );
     }
