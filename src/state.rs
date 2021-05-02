@@ -47,8 +47,6 @@ impl AppState {
       _ => panic!("Mutex poisoned"),
     }
 
-    println!("Poll '{}' created", poll_id);
-
     poll_id
   }
 

@@ -9,9 +9,8 @@ extern crate serde;
 use rocket::{http::ContentType, http::Status, response::NamedFile, Response, State};
 use serde_json::Value;
 use state::AppState;
-use std::io::Cursor;
 use std::path::PathBuf;
-use std::str::FromStr;
+use std::{io::Cursor, path::Path};
 
 mod error;
 mod poll;
@@ -19,37 +18,39 @@ mod state;
 
 use crate::error::Error;
 
-#[get("/")]
-fn index() -> Result<NamedFile, Error> {
-  let path =
-    PathBuf::from_str("frontend/build/index.html").map_err(|e| Error::from(e.to_string()))?;
-  NamedFile::open(path).map_err(|e| Error::from(e.to_string()))
+/// Static file directory
+const STATIC_FILES_DIR: &str = "frontend/build";
+
+fn main() -> Result<(), Error> {
+  let state = AppState::load();
+
+  rocket::ignite()
+    .mount(
+      "/",
+      routes![
+        api_get_poll,
+        api_create_poll,
+        api_vote_poll,
+        index,
+        resource
+      ],
+    )
+    .manage(state)
+    .launch();
+
+  Ok(())
 }
 
-#[get("/<path..>", rank = 2)]
-fn get_resource(path: PathBuf) -> Result<NamedFile, Error> {
-  let mut final_path =
-    PathBuf::from_str("frontend/build").map_err(|e| Error::from(e.to_string()))?;
-
-  final_path.push(path);
-
-  if final_path.is_file() {
-    NamedFile::open(final_path).map_err(|e| Error::from(e.to_string()))
-  } else {
-    index()
-  }
-}
-
-/// Gets info on a specific poll
+/// API Endpoint: Handler for fetching a specific poll
 #[get("/poll/<id>")]
-fn get_poll(id: String, state: State<AppState>) -> Result<Response, Error> {
+fn api_get_poll(id: String, state: State<AppState>) -> Result<Response, Error> {
   let mut response = Response::new();
 
   match state.get_poll_info(&id) {
     Some(poll) => {
-      response.set_sized_body(Cursor::new(
-        serde_json::to_vec(&poll).map_err(|_| Error::from("Shiet"))?,
-      ));
+      response.set_sized_body(Cursor::new(serde_json::to_vec(&poll).map_err(|_| {
+        Error::new("Could not serialize poll", Status::InternalServerError)
+      })?));
       response.set_status(Status::Ok);
     }
     None => response.set_status(Status::NotFound),
@@ -58,9 +59,9 @@ fn get_poll(id: String, state: State<AppState>) -> Result<Response, Error> {
   Ok(response)
 }
 
-/// Creates new poll
+/// API Endpoint: Handler for creating a new poll
 #[post("/poll", data = "<data>")]
-fn create_poll(data: String, state: State<AppState>) -> Result<Response, Error> {
+fn api_create_poll(data: String, state: State<AppState>) -> Result<Response, Error> {
   let body: Value = serde_json::from_str(&data).unwrap();
 
   let title = body
@@ -93,9 +94,9 @@ fn create_poll(data: String, state: State<AppState>) -> Result<Response, Error> 
   Ok(response)
 }
 
-/// Votes on a specific poll
+/// API Endpoint: Handler for voting on a specific poll
 #[post("/poll/<id>", data = "<data>")]
-fn vote(id: String, data: String, state: State<AppState>) -> Result<Response, Error> {
+fn api_vote_poll(id: String, data: String, state: State<AppState>) -> Result<Response, Error> {
   let body: Value = serde_json::from_str(&data).unwrap();
 
   let email = body
@@ -122,16 +123,19 @@ fn vote(id: String, data: String, state: State<AppState>) -> Result<Response, Er
   }
 }
 
-fn main() -> Result<(), Error> {
-  let state = AppState::load();
+#[get("/")]
+fn index() -> Option<NamedFile> {
+  NamedFile::open(Path::new(STATIC_FILES_DIR).join("index.html")).ok()
+}
 
-  rocket::ignite()
-    .mount(
-      "/",
-      routes![get_poll, create_poll, vote, index, get_resource],
-    )
-    .manage(state)
-    .launch();
-
-  Ok(())
+#[get("/<path..>", rank = 2)]
+fn resource(path: PathBuf, state: State<AppState>) -> Option<NamedFile> {
+  if state
+    .get_poll_info(path.to_str().expect("Could not stringify path"))
+    .is_some()
+  {
+    index()
+  } else {
+    NamedFile::open(Path::new(STATIC_FILES_DIR).join(path)).ok()
+  }
 }

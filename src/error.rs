@@ -58,18 +58,6 @@ impl<'a, E: std::error::Error + 'a> From<E> for Box<Error> {
   }
 }
 
-// impl<E> From<E> for Error
-// where
-//   E: std::error::Error,
-// {
-//   fn from(e: E) -> Self {
-//     Self {
-//       msg: e.to_string(),
-//       status: None,
-//     }
-//   }
-// }
-
 impl<'r> Responder<'r> for Error {
   fn respond_to(self, _: &rocket::Request) -> rocket::response::Result<'r> {
     Response::build()
