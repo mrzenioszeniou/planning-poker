@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import { config } from './Constants';
 
 enum Stage {
   Start,
@@ -50,7 +51,7 @@ class App extends React.Component<Props, State>  {
             <div className="input-title">Title</div>
             <input id="title" type="text" value={this.state.title} onChange={(e) => this.setState({title: e.target.value})}/>
             <div className="input-title">Description</div>
-            <textarea id="description" value={this.state.description} onChange={(e) => this.setState({description: e.target.value})} cols={64} rows={16}/>
+            <textarea id="description" value={this.state.description} onChange={(e) => this.setState({description: e.target.value})} rows={14}/>
             <div className="button orange centered" onClick={() => this.createPoll()} >Create Poll</div>
             <a className="subtle-link centered" href="/">Back</a>
           </div>
@@ -81,7 +82,9 @@ class App extends React.Component<Props, State>  {
 
   joinPoll() {
     
-    const url = 'http://localhost:8000/poll/' + this.state.poll;
+    // const url = 'http://localhost:8000/poll/' + this.state.poll;
+    const url = config.API_URL + 'poll/' + this.state.poll;
+
     const requestOptions = {
       method: 'GET',
       header: {'Content-Type': 'application/json'},
@@ -102,7 +105,9 @@ class App extends React.Component<Props, State>  {
   
     if (this.state.title.length !== 0) {
   
-      const url = 'http://localhost:8000/poll';
+      // const url = 'http://localhost:8000/poll';
+      const url = config.API_URL + 'poll';
+
       const requestOptions = {
         method: 'POST',
         header: {'Content-Type': 'application/json'},
