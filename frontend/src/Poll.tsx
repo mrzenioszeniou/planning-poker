@@ -171,7 +171,7 @@ class Poll extends React.Component<Props, State>  {
               </div>
             );
         } else {
-          content = (<div>No votes were casted.</div>);
+          content = (<div>No votes were cast.</div>);
         }
         break;
       }
