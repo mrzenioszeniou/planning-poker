@@ -11,7 +11,6 @@
 
 footer {
   position: fixed;
-  left: 0;
   bottom: 0;
   width: 100%;
   text-align: center;
@@ -27,8 +26,8 @@ textarea {
   display: flex;
   flex-direction: column;
   font-size: larger;
-  padding-left: 15em;
-  padding-right: 15em;
+  padding-left: 10em;
+  padding-right: 10em;
   justify-content: center;
 }
 
@@ -47,52 +46,16 @@ textarea {
   flex-direction: row;
 }
 
-.results-title {
-  font-weight: 600;
-  margin-right: 1em;
-  margin-bottom: 1em;
-  text-align: right;
-}
-
-.results-value {
-  margin-bottom: 1em;
-}
-
-.input-title {
-  font-size: medium;
-  margin-top: 1em;
-}
-
-.input-poll {
-  width: 10em;
-}
-
 .subtle-link {
   font-size: small;
   color: var(--yellow);
 }
 
+
 .warning {
   margin: 5px;
   font-size: medium;
   color: var(--orange);
-}
-
-.poll-details {
-  margin-top: 3em;
-  margin-bottom: 3em;
-}
-
-.poll-title {
-  font-size: x-large;
-  font-weight: 600;
-  margin: 10px;
-}
-
-.poll-desc {
-  font-size: larger;
-  font-weight: 400;
-  margin: 10px;
 }
 
 .button {
@@ -128,4 +91,41 @@ textarea {
   transition: 0.1s;
   color: var(--orange);
   background-color: var(--white);
+}
+
+.input-title {
+  font-size: medium;
+  margin-top: 1em;
+}
+
+.input-poll {
+  width: 10em;
+}
+
+.poll-details {
+  margin-top: 3em;
+  margin-bottom: 1em;
+}
+
+.poll-title {
+  font-size: x-large;
+  font-weight: 600;
+  margin: 10px;
+}
+
+.poll-desc {
+  font-size: large;
+  font-weight: 400;
+  margin: 10px;
+}
+
+.results-title {
+  font-weight: 600;
+  margin-right: 1em;
+  margin-bottom: 1em;
+  text-align: right;
+}
+
+.results-value {
+  margin-bottom: 1em;
 }

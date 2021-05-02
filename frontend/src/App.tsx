@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { config } from './Constants';
+import { Config } from './Constants';
 
 enum Stage {
   Start,
@@ -25,8 +25,8 @@ class App extends React.Component<Props, State>  {
     super(props);
     this.state = {
       stage: Stage.Start,
-      title: "Add some stuff to the thing",
-      description: "The thing has a few stuff, but some more should be added. We wouldn't want to be the team with the less amount of stuff in their thing, would we?",
+      title: "",
+      description: "",
       poll: "",
       valid: true,
     };
@@ -82,8 +82,7 @@ class App extends React.Component<Props, State>  {
 
   joinPoll() {
     
-    // const url = 'http://localhost:8000/poll/' + this.state.poll;
-    const url = config.API_URL + 'poll/' + this.state.poll;
+    const url = Config.API_URL + 'poll/' + this.state.poll;
 
     const requestOptions = {
       method: 'GET',
@@ -105,8 +104,7 @@ class App extends React.Component<Props, State>  {
   
     if (this.state.title.length !== 0) {
   
-      // const url = 'http://localhost:8000/poll';
-      const url = config.API_URL + 'poll';
+      const url = Config.API_URL + 'poll';
 
       const requestOptions = {
         method: 'POST',

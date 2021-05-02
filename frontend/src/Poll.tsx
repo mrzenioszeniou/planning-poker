@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import { RouteComponentProps, withRouter } from "react-router";
-import { config } from './Constants';
+import { Config } from './Constants';
 import { Chart } from 'react-google-charts';
 
 interface RouteInterface {
@@ -17,7 +17,7 @@ enum Stage {
   Results,
 }
 
-enum Vote {
+enum Weight {
   Zero = 0.0,
   Half = 0.5,
   One = 1.0,
@@ -31,14 +31,14 @@ enum Vote {
 interface PollData {
   title: string;
   desc: string;
-  votes: Map<String, Vote>;
+  votes: Map<String, Weight>;
 }
 
 interface State {
   poll: string;
   stage: Stage;
   email: string;
-  vote: Vote;
+  weight: Weight;
   pollData: PollData | null;
 }
 
@@ -49,8 +49,8 @@ class Poll extends React.Component<Props, State>  {
     this.state = {
       poll: props.match.params.poll,
       stage: Stage.Start,
-      email: "mrzenioszeniou@gmail.com",
-      vote: Vote.Zero,
+      email: "",
+      weight: Weight.One,
       pollData: null,
     };
   }
@@ -85,15 +85,15 @@ class Poll extends React.Component<Props, State>  {
             <div className="input-title">Email:</div>
             <input style={{width: "20em"}} type="email" value={this.state.email} onChange={e => this.setState({email: e.target.value})}/>
             <div className="input-title">Weight:</div>
-            <select id="votes" onChange={e => this.setState({vote: Number(e.target.value)})}>
-              <option value={Vote.Zero}>{Vote.Zero}</option>
-              <option value={Vote.Half}>{Vote.Half}</option>
-              <option value={Vote.One}>{Vote.One}</option>
-              <option value={Vote.Two}>{Vote.Two}</option>
-              <option value={Vote.Three}>{Vote.Three}</option>
-              <option value={Vote.Five}>{Vote.Five}</option>
-              <option value={Vote.Eight}>{Vote.Eight}</option>
-              <option value={Vote.Thirteen}>{Vote.Thirteen}</option>
+            <select id="votes" value={this.state.weight} onChange={e => this.setState({weight: Number(e.target.value)})}>
+              <option value={Weight.Zero}>{Weight.Zero}</option>
+              <option value={Weight.Half}>{Weight.Half}</option>
+              <option value={Weight.One}>{Weight.One}</option>
+              <option value={Weight.Two}>{Weight.Two}</option>
+              <option value={Weight.Three}>{Weight.Three}</option>
+              <option value={Weight.Five}>{Weight.Five}</option>
+              <option value={Weight.Eight}>{Weight.Eight}</option>
+              <option value={Weight.Thirteen}>{Weight.Thirteen}</option>
             </select>
             <div className="button orange centered" onClick={()=>this.vote()}>Submit</div>
           </div>
@@ -102,24 +102,26 @@ class Poll extends React.Component<Props, State>  {
       case Stage.Results:
         if (this.state.pollData !== null) {
 
-          let votes: Map<Vote, number> = new Map();
+          let votes: Map<Weight, number> = new Map();
           let n: number = 0;
           let sum: number = 0;
     
-          Object.values(this.state.pollData.votes).forEach((e: Vote) => {
+          Object.values(this.state.pollData.votes).forEach((v: Weight) => {
 
-            if (votes.has(e)) {
-              votes.set(e, votes.get(e) as number + 1);
+            if (votes.has(v)) {
+              votes.set(v, votes.get(v) as number + 1);
             } else {
-              votes.set(e, 1);
+              votes.set(v, 1);
             }
+
             n += 1;
-            sum += e;
+            sum += v;
           });
 
           if (n > 0) {
             content = (
               <div className="column centered">
+                
                 <div className="row">
                   <div className="column">
                     <div className="results-title">Total # of Votes:</div>
@@ -127,9 +129,10 @@ class Poll extends React.Component<Props, State>  {
                   </div>
                   <div className="column">
                     <div className="results-value">{n}</div>
-                    <div className="results-value">{sum / n}</div>
+                    <div className="results-value">{(sum / n).toFixed(2)}</div>
                   </div>
                 </div>
+
                 <Chart
                   width={600}
                   height={300}
@@ -137,14 +140,14 @@ class Poll extends React.Component<Props, State>  {
                   loader={<div>Loading Chart</div>}
                   data={[
                     ['Weight','Votes'],
-                    [Vote.Zero.toString(), votes.get(Vote.Zero)],
-                    [Vote.Half.toString(), votes.get(Vote.Half)],
-                    [Vote.One.toString(), votes.get(Vote.One)],
-                    [Vote.Two.toString(), votes.get(Vote.Two)],
-                    [Vote.Three.toString(), votes.get(Vote.Three)],
-                    [Vote.Five.toString(), votes.get(Vote.Five)],
-                    [Vote.Eight.toString(), votes.get(Vote.Eight)],
-                    [Vote.Thirteen.toString(), votes.get(Vote.Thirteen)]
+                    [Weight.Zero.toString(), votes.get(Weight.Zero)],
+                    [Weight.Half.toString(), votes.get(Weight.Half)],
+                    [Weight.One.toString(), votes.get(Weight.One)],
+                    [Weight.Two.toString(), votes.get(Weight.Two)],
+                    [Weight.Three.toString(), votes.get(Weight.Three)],
+                    [Weight.Five.toString(), votes.get(Weight.Five)],
+                    [Weight.Eight.toString(), votes.get(Weight.Eight)],
+                    [Weight.Thirteen.toString(), votes.get(Weight.Thirteen)]
                   ]}
                   options={{
                     backgroundColor: '#fff9e9',
@@ -164,6 +167,7 @@ class Poll extends React.Component<Props, State>  {
                     legend: 'none',
                   }}
                   />
+
               </div>
             );
         } else {
@@ -188,30 +192,34 @@ class Poll extends React.Component<Props, State>  {
   }
 
   fetchPollData() {
-    const url = config.API_URL + 'poll/' + this.state.poll;
+
+    const url = Config.API_URL + 'poll/' + this.state.poll;
+
     const requestOptions = {
       method: 'GET',
       header: {'Content-Type': 'application/json'},
     };
     
     fetch(url, requestOptions)
-      .then(response => response.ok ? response.json() : this.setState({stage: Stage.NotFound}))
-      .then(body => this.setState({pollData: body}));
+    .then(response => response.ok ? response.json() : this.setState({stage: Stage.NotFound}))
+    .then(body => this.setState({pollData: body}))
+    .catch(e => this.setState({stage: Stage.NotFound}));
   }
 
   vote() {
 
     const re = /^\S+@\S+$/;
-    if (re.test(String(this.state.email).toLowerCase())) {
 
-      const url = config.API_URL + 'poll/' + this.state.poll;
+    if (re.test(String(this.state.email))) {
+
+      const url = Config.API_URL + 'poll/' + this.state.poll;
 
       const requestOptions = {
         method: 'POST',
         header: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          email: this.state.email,
-          weight: this.state.vote,
+          email: this.state.email.toLowerCase(),
+          weight: this.state.weight,
         }),
       };
 
@@ -222,7 +230,6 @@ class Poll extends React.Component<Props, State>  {
             this.setState({stage: Stage.Results});
           }
         });
-          
     }
   }
 }
